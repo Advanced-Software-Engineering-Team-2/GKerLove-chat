@@ -6,7 +6,6 @@ interface ServerToClientEvents {
 }
 
 interface ClientToServerEvents {
-  hello: () => void;
   privateMessage: (
     content: string,
     recipientId: string,

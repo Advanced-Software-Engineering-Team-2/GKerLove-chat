@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema } from 'mongoose';
 
 export interface IMessage {
   timestamp: Date;
@@ -15,7 +15,3 @@ export const messageSchema = new Schema<IMessage>({
   recipientId: { type: String, required: true },
   content: { type: String, required: true },
 });
-
-const Message = model<IMessage>('Message', messageSchema);
-
-export default Message;

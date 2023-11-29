@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
+import uuid from 'uuid';
 
 import logger from './logger';
 import config from './config';
@@ -13,8 +14,8 @@ import {
   SocketData,
 } from './types/socket.io';
 import User from './models/user';
-import Message from './models/message';
-import Session from './models/session';
+import { IMessage } from './models/message';
+import Session, { ISession } from './models/session';
 
 async function startApp() {
   try {
@@ -34,7 +35,7 @@ async function startApp() {
       SocketData
     >(httpServer, {
       cors: {
-        origin: 'http://localhost:8080',
+        origin: 'http://localhost:5173',
       },
     });
 
@@ -78,19 +79,36 @@ async function startApp() {
       // 收到用户发送私信
       socket.on('privateMessage', async (content, to, type, callback) => {
         logger.info('发送私信', username, to, content, type);
-        const message = new Message({
+        const message: IMessage = {
           timestamp: new Date(),
           type,
           senderId: socket.data.userId,
           recipientId: to,
           content,
+        };
+        const session = await Session.findOne({
+          $or: [
+            { initiatorId: userId, recipientId: to },
+            { initiatorId: to, recipientId: userId },
+          ],
         });
-        await message.save();
-        socket
-          .to(to)
-          .to(socket.data.userId)
-          .emit('privateMessage', message.toObject());
-        callback(message.toObject());
+        if (!session) {
+          const newSession = new Session<ISession>({
+            _id: uuid.v4(),
+            initiatorId: userId,
+            recipientId: to,
+            lastUpdated: new Date(),
+            messages: [message],
+          });
+          await newSession.save();
+        } else {
+          await session.updateOne({
+            lastUpdated: new Date(),
+            $push: { messages: message },
+          });
+        }
+        socket.to(to).to(socket.data.userId).emit('privateMessage', message);
+        callback(message);
       });
 
       // 用户阅读消息
