@@ -1,7 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
-import uuid from 'uuid';
 
 import logger from './logger';
 import config from './config';
@@ -15,7 +14,7 @@ import {
 } from './types/socket.io';
 import User from './models/user';
 import { IMessage } from './models/message';
-import Session, { ISession } from './models/session';
+import Session from './models/session';
 
 async function startApp() {
   try {
@@ -69,46 +68,30 @@ async function startApp() {
       // 为用户创建一个room
       socket.join(socket.data.userId);
 
-      // 发送历史消息给用户
-      const sessions = await Session.find({
-        $or: [{ initiatorId: userId }, { recipientId: userId }],
-      });
-      const messages = [...sessions.map((session) => session.messages)].flat();
-      socket.emit('messages', messages);
-
       // 收到用户发送私信
       socket.on('privateMessage', async (content, to, type, callback) => {
         logger.info('发送私信', username, to, content, type);
         const message: IMessage = {
           timestamp: new Date(),
           type,
-          senderId: socket.data.userId,
-          recipientId: to,
+          sender_id: socket.data.userId,
+          recipient_id: to,
           content,
         };
         const session = await Session.findOne({
           $or: [
-            { initiatorId: userId, recipientId: to },
-            { initiatorId: to, recipientId: userId },
+            { initiator_id: userId, recipient_id: to },
+            { initiator_id: to, recipient_id: userId },
           ],
         });
-        if (!session) {
-          const newSession = new Session<ISession>({
-            _id: uuid.v4(),
-            initiatorId: userId,
-            recipientId: to,
-            lastUpdated: new Date(),
-            messages: [message],
-          });
-          await newSession.save();
-        } else {
+        if (session) {
           await session.updateOne({
-            lastUpdated: new Date(),
+            last_updated: new Date(),
             $push: { messages: message },
           });
+          callback(message);
+          socket.to(to).to(socket.data.userId).emit('privateMessage', message);
         }
-        socket.to(to).to(socket.data.userId).emit('privateMessage', message);
-        callback(message);
       });
 
       // 用户阅读消息
@@ -120,8 +103,8 @@ async function startApp() {
         }
         await session.updateOne({
           [`${
-            userId === session.initiatorId ? 'initiator' : 'recipient'
-          }LastRead`]: new Date(),
+            userId === session.initiator_id ? 'initiator' : 'recipient'
+          }_last_read`]: new Date(),
         });
       });
 
@@ -134,7 +117,7 @@ async function startApp() {
           // 更新用户状态为离线，同时记录离线时间
           User.findByIdAndUpdate(userId, {
             online: false,
-            lastOnine: new Date(),
+            last_onine: new Date(),
           }).exec();
         }
       });
