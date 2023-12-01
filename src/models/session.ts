@@ -4,21 +4,19 @@ import { messageSchema } from './message';
 
 export interface ISession {
   _id: string;
-  initiator_id: string;
-  recipient_id: string;
-  last_updated: Date;
-  initiator_last_read?: Date;
-  recipient_last_read?: Date;
+  initiatorId: string;
+  recipientId: string;
   messages: IMessage[];
+  initiatorLastRead?: Date;
+  recipientLastRead?: Date;
 }
 
 export const sessionSchema = new Schema<ISession>({
   _id: { type: String, required: true },
-  initiator_id: { type: String, required: true },
-  recipient_id: { type: String, required: true },
-  last_updated: { type: Date, required: true },
-  initiator_last_read: { type: Date },
-  recipient_last_read: { type: Date },
+  initiatorId: { type: String, required: true },
+  recipientId: { type: String, required: true },
+  initiatorLastRead: { type: Date },
+  recipientLastRead: { type: Date },
   messages: { type: [messageSchema], default: [] },
 });
 

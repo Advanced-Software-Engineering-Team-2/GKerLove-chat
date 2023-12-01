@@ -5,7 +5,7 @@ export interface IUser {
   username: string;
   email: string;
   online: boolean;
-  last_onine?: Date;
+  lastOnine?: Date;
 }
 
 export const userSchema = new Schema<IUser>({
@@ -13,11 +13,7 @@ export const userSchema = new Schema<IUser>({
   username: { type: String, required: true },
   email: { type: String, required: true },
   online: { type: Boolean, default: false },
-  last_onine: { type: Date },
-});
-
-userSchema.pre('save', function (next) {
-  next(new Error('不可对用户表进行修改'));
+  lastOnine: { type: Date },
 });
 
 const User = model<IUser>('User', userSchema);

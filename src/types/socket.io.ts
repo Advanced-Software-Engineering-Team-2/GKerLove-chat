@@ -1,16 +1,18 @@
 import { IMessage } from '../models/message';
 
+interface IServerToClientMessage {
+  sessionId: string;
+  message: IMessage;
+}
+
 interface ServerToClientEvents {
-  messages: (messages: IMessage[]) => void;
-  privateMessage: (message: IMessage) => void;
+  privateMessage: (message: IServerToClientMessage) => void;
 }
 
 interface ClientToServerEvents {
   privateMessage: (
-    content: string,
-    recipientId: string,
-    type: 'text' | 'image',
-    callback: (message: IMessage) => void,
+    message: IMessage,
+    callback: (message: IServerToClientMessage) => void,
   ) => void;
   readMessages: (sessionId: string) => void;
 }

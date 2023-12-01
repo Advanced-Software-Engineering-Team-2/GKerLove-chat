@@ -13,8 +13,8 @@ import {
   SocketData,
 } from './types/socket.io';
 import User from './models/user';
-import { IMessage } from './models/message';
-import Session from './models/session';
+import Session, { ISession } from './models/session';
+import { randomUUID } from 'crypto';
 
 async function startApp() {
   try {
@@ -38,6 +38,7 @@ async function startApp() {
       },
     });
 
+    // 身份认证中间件
     io.use(async (socket, next) => {
       const token = socket.handshake.auth.token;
       if (token) {
@@ -69,28 +70,46 @@ async function startApp() {
       socket.join(socket.data.userId);
 
       // 收到用户发送私信
-      socket.on('privateMessage', async (content, to, type, callback) => {
-        logger.info('发送私信', username, to, content, type);
-        const message: IMessage = {
-          timestamp: new Date(),
-          type,
-          sender_id: socket.data.userId,
-          recipient_id: to,
-          content,
-        };
+      socket.on('privateMessage', async (message, callback) => {
+        const senderId = userId;
+        const recipientId = message.recipientId;
+        logger.info(
+          '发送私信',
+          senderId,
+          recipientId,
+          message.content,
+          message.type,
+        );
         const session = await Session.findOne({
           $or: [
-            { initiator_id: userId, recipient_id: to },
-            { initiator_id: to, recipient_id: userId },
+            { initiatorId: senderId, recipientId: recipientId },
+            { initiatorId: recipientId, recipientId: senderId },
           ],
         });
         if (session) {
           await session.updateOne({
-            last_updated: new Date(),
             $push: { messages: message },
           });
-          callback(message);
-          socket.to(to).to(socket.data.userId).emit('privateMessage', message);
+          callback({
+            sessionId: session._id,
+            message,
+          });
+          socket.to(recipientId).to(socket.data.userId).emit('privateMessage', {
+            sessionId: session._id,
+            message,
+          });
+        } else {
+          const newSession = new Session<ISession>({
+            _id: randomUUID(),
+            initiatorId: senderId,
+            recipientId: recipientId,
+            messages: [message],
+          });
+          await newSession.save();
+          callback({
+            sessionId: newSession._id,
+            message,
+          });
         }
       });
 
@@ -103,8 +122,8 @@ async function startApp() {
         }
         await session.updateOne({
           [`${
-            userId === session.initiator_id ? 'initiator' : 'recipient'
-          }_last_read`]: new Date(),
+            userId === session.initiatorId ? 'initiator' : 'recipient'
+          }LastRead`]: new Date(),
         });
       });
 
@@ -117,7 +136,7 @@ async function startApp() {
           // 更新用户状态为离线，同时记录离线时间
           User.findByIdAndUpdate(userId, {
             online: false,
-            last_onine: new Date(),
+            lastOnine: new Date(),
           }).exec();
         }
       });
