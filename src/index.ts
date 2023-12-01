@@ -110,6 +110,10 @@ async function startApp() {
             sessionId: newSession._id,
             message,
           });
+          socket.to(recipientId).to(socket.data.userId).emit('privateMessage', {
+            sessionId: newSession._id,
+            message,
+          });
         }
       });
 
