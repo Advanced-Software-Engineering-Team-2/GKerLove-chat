@@ -7,6 +7,8 @@ interface IServerToClientMessage {
 
 interface ServerToClientEvents {
   privateMessage: (message: IServerToClientMessage) => void;
+  startTyping: (sessionId: string) => void;
+  stopTyping: (sessionId: string) => void;
 }
 
 interface ClientToServerEvents {
@@ -14,6 +16,8 @@ interface ClientToServerEvents {
     message: IMessage,
     callback: (message: IServerToClientMessage) => void,
   ) => void;
+  startTyping: (sessionId: string) => void;
+  stopTyping: (sessionId: string) => void;
   readMessages: (sessionId: string) => void;
 }
 

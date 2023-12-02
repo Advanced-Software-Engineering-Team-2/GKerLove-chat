@@ -131,6 +131,34 @@ async function startApp() {
         });
       });
 
+      // 用户开始输入
+      socket.on('startTyping', async (sessionId) => {
+        const session = await Session.findOne({
+          _id: sessionId,
+          $or: [{ initiatorId: userId }, { recipientId: userId }],
+        });
+        if (!session) return;
+        const targetId =
+          userId === session.initiatorId
+            ? session.recipientId
+            : session.initiatorId;
+        socket.to(targetId).emit('startTyping', sessionId);
+      });
+
+      // 用户停止输入
+      socket.on('stopTyping', async (sessionId) => {
+        const session = await Session.findOne({
+          _id: sessionId,
+          $or: [{ initiatorId: userId }, { recipientId: userId }],
+        });
+        if (!session) return;
+        const targetId =
+          userId === session.initiatorId
+            ? session.recipientId
+            : session.initiatorId;
+        socket.to(targetId).emit('stopTyping', sessionId);
+      });
+
       // 用户断开连接
       socket.on('disconnect', async () => {
         const matchingSockets = await io.in(socket.data.userId).fetchSockets();
