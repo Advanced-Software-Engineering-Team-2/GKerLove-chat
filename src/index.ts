@@ -168,10 +168,11 @@ async function startApp() {
           $or: [{ initiatorId: userId }, { recipientId: userId }],
         });
         if (!session) return;
-        Session.updateOne(
+        await Session.updateOne(
           { _id: sessionId, 'messages._id': messageId },
           { $set: { 'messages.$.viewed': true } },
-        ).exec();
+        );
+        logger.info('更新图片状态', messageId);
         const targetId =
           userId === session.initiatorId
             ? session.recipientId
