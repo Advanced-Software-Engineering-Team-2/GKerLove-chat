@@ -5,7 +5,7 @@ export interface IUser {
   username: string;
   email: string;
   online: boolean;
-  lastOnine?: Date;
+  lastOnline?: Date;
 }
 
 export const userSchema = new Schema<IUser>({
@@ -13,7 +13,7 @@ export const userSchema = new Schema<IUser>({
   username: { type: String, required: true },
   email: { type: String, required: true },
   online: { type: Boolean, default: false },
-  lastOnine: { type: Date },
+  lastOnline: { type: Date },
 });
 
 const User = model<IUser>('User', userSchema);

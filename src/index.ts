@@ -168,7 +168,7 @@ async function startApp() {
           // 更新用户状态为离线，同时记录离线时间
           User.findByIdAndUpdate(userId, {
             online: false,
-            lastOnine: new Date(),
+            lastOnline: new Date(),
           }).exec();
         }
       });
