@@ -34,7 +34,7 @@ async function startApp() {
       SocketData
     >(httpServer, {
       cors: {
-        origin: 'http://localhost:5173',
+        origin: config.origin,
       },
     });
 
@@ -194,7 +194,7 @@ async function startApp() {
       });
     });
 
-    httpServer.listen(3000, () => {
+    httpServer.listen(config.port, () => {
       logger.info('服务器启动成功!');
     });
   } catch (err) {
