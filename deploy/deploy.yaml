@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: gkerlove-chat-server
+  name: gkerlove-chat-server
+  namespace: gker-love
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gkerlove-chat-server
+  template:
+    metadata:
+      labels:
+        app: gkerlove-chat-server
+    spec:
+      imagePullSecrets:
+        - name: alibaba-docker-registry-secret
+      containers:
+        - image: $REGISTRY/$DOCKERHUB_NAMESPACE/gkerlove-chat-server:SNAPSHOT-$BUILD_NUMBER
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: gkerlove-chat-server
+  name: gkerlove-chat-server
+  namespace: gker-love
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: gkerlove-chat-server
+  type: ClusterIP
+
