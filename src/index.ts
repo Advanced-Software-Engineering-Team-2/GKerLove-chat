@@ -14,7 +14,7 @@ import {
 } from './types/socket.io';
 import User from './models/user';
 import Session, { ISession } from './models/session';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 async function startApp() {
   try {
@@ -80,6 +80,7 @@ async function startApp() {
           message.content,
           message.type,
         );
+        message._id = uuidv4();
         const session = await Session.findOne({
           $or: [
             { initiatorId: senderId, recipientId: recipientId },
@@ -100,7 +101,7 @@ async function startApp() {
           });
         } else {
           const newSession = new Session<ISession>({
-            _id: randomUUID(),
+            _id: uuidv4(),
             initiatorId: senderId,
             recipientId: recipientId,
             messages: [message],
@@ -157,6 +158,25 @@ async function startApp() {
             ? session.recipientId
             : session.initiatorId;
         socket.to(targetId).emit('stopTyping', sessionId);
+      });
+
+      // 用户查看图片
+      socket.on('viewImage', async (sessionId, messageId) => {
+        logger.info('查看图片', username, sessionId, messageId);
+        const session = await Session.findOne({
+          _id: sessionId,
+          $or: [{ initiatorId: userId }, { recipientId: userId }],
+        });
+        if (!session) return;
+        Session.updateOne(
+          { _id: sessionId, 'messages._id': messageId },
+          { $set: { 'messages.$.viewed': true } },
+        ).exec();
+        const targetId =
+          userId === session.initiatorId
+            ? session.recipientId
+            : session.initiatorId;
+        socket.to(targetId).emit('viewImage', sessionId, messageId);
       });
 
       // 用户断开连接

@@ -9,6 +9,7 @@ interface ServerToClientEvents {
   privateMessage: (message: IServerToClientMessage) => void;
   startTyping: (sessionId: string) => void;
   stopTyping: (sessionId: string) => void;
+  viewImage: (sessionId: string, messageId: string) => void;
 }
 
 interface ClientToServerEvents {
@@ -19,6 +20,7 @@ interface ClientToServerEvents {
   startTyping: (sessionId: string) => void;
   stopTyping: (sessionId: string) => void;
   readMessages: (sessionId: string) => void;
+  viewImage: (sessionId: string, messageId: string) => void;
 }
 
 interface InterServerEvents {
