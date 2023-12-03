@@ -69,8 +69,6 @@ async function startApp() {
         const username = socket.data.username;
         logger.info('用户连接', username);
 
-        //TODO: 获取用户聊天会话，发送给用户
-
         // 更新用户状态为在线
         try {
           await User.findByIdAndUpdate(userId, { online: true });
