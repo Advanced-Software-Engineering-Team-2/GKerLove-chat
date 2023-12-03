@@ -112,7 +112,7 @@ async function startApp() {
             });
             if (session) {
               await session.updateOne({
-                $push: { messages: message },
+                $push: { messages: newMessage },
               });
             } else {
               session = new Session<ISession>({
