@@ -1,26 +1,42 @@
-import { IMessage } from '../models/message';
+import { IMessage, messageType } from '../models/message';
+
+interface R<T = void> {
+  type: 'SUCCESS' | 'ERROR';
+  message?: string;
+  data?: T;
+}
 
 interface IServerToClientMessage {
   sessionId: string;
   message: IMessage;
 }
 
+interface IClientToServerMessage {
+  type: messageType;
+  recipientId: string;
+  content: string;
+}
+
 interface ServerToClientEvents {
   privateMessage: (message: IServerToClientMessage) => void;
+  viewDisappearingImage: (sessionId: string, messageId: string) => void;
   startTyping: (sessionId: string) => void;
   stopTyping: (sessionId: string) => void;
-  viewImage: (sessionId: string, messageId: string) => void;
 }
 
 interface ClientToServerEvents {
   privateMessage: (
-    message: IMessage,
-    callback: (message: IServerToClientMessage) => void,
+    message: IClientToServerMessage,
+    callback: (res: R<IServerToClientMessage>) => void,
   ) => void;
-  startTyping: (sessionId: string) => void;
-  stopTyping: (sessionId: string) => void;
-  readMessages: (sessionId: string) => void;
-  viewImage: (sessionId: string, messageId: string) => void;
+  viewDisappearingImage: (
+    sessionId: string,
+    messageId: string,
+    callback: (res: R) => void,
+  ) => void;
+  startTyping: (sessionId: string, callback: (res: R) => void) => void;
+  stopTyping: (sessionId: string, callback: (res: R) => void) => void;
+  readMessages: (sessionId: string, callback: (res: R) => void) => void;
 }
 
 interface InterServerEvents {
@@ -33,6 +49,7 @@ interface SocketData {
 }
 
 export {
+  R,
   ServerToClientEvents,
   ClientToServerEvents,
   InterServerEvents,
