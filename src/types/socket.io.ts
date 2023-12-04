@@ -15,6 +15,7 @@ interface IClientToServerMessage {
   type: messageType;
   recipientId: string;
   content: string;
+  timestamp: string;
 }
 
 interface ServerToClientEvents {

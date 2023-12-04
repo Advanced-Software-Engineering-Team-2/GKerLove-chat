@@ -86,6 +86,7 @@ async function startApp() {
             const recipientId = message.recipientId;
             const content = message.content;
             const messageType = message.type;
+            const timestamp = new Date(message.timestamp);
             logger.info(
               '发送私信',
               senderId,
@@ -95,7 +96,7 @@ async function startApp() {
             );
             const newMessage: IMessage = {
               _id: uuidv4(),
-              timestamp: new Date(),
+              timestamp,
               type: messageType,
               senderId,
               recipientId,
