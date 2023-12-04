@@ -15,7 +15,7 @@ const devConfig: Config = {
   dbPass: 'gkers111666',
   dbAuthSource: 'test',
   jwtSecret: 'foshfnfoeawbosdnvosifgosjcolnjosigdfogvjh0e4wfsiladfv',
-  origin: 'http://localhost:5173',
+  origin: '*',
 };
 
 const prodConfig: Config = {
