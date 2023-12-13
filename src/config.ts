@@ -5,7 +5,7 @@ interface Config {
   dbPass: string;
   dbAuthSource: string;
   jwtSecret: string;
-  origin: string;
+  origin: string | string[];
 }
 
 const devConfig: Config = {
@@ -25,7 +25,7 @@ const prodConfig: Config = {
   dbPass: 'gkers111666',
   dbAuthSource: 'admin',
   jwtSecret: 'foshfnfoeawbosdnvosifgosjcolnjosigdfogvjh0e4wfsiladfv',
-  origin: 'https://love.gkers.cqupt-gyr.xyz',
+  origin: ['https://love.gkers.cqupt-gyr.xyz', 'https://love.gkers.top'],
 };
 
 const config = process.env.NODE_ENV === 'prod' ? prodConfig : devConfig;

@@ -22,6 +22,6 @@ export const messageSchema = new Schema<IMessage>({
   },
   senderId: { type: String, required: true },
   recipientId: { type: String, required: true },
-  content: { type: String, required: true, maxlength: 50 },
+  content: { type: String, required: true, maxlength: 500 },
   viewed: { type: Boolean, required: false },
 });
