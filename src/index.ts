@@ -94,6 +94,11 @@ async function startApp() {
               content,
               messageType,
             );
+            if (content.length > 500) {
+              logger.error('发送私信失败', '消息过长');
+              callback({ type: 'ERROR', message: '消息过长' });
+              return;
+            }
             const newMessage: IMessage = {
               _id: uuidv4(),
               timestamp,
