@@ -181,13 +181,9 @@ async function startApp() {
               }
               if (session.anonymous) {
                 // 判断双方是否是正在匹配的用户
-                const index1 = matchingQueue.findIndex(
-                  (u) => u._id === senderId,
-                );
-                const index2 = matchingQueue.findIndex(
-                  (u) => u._id === recipientId,
-                );
-                if (index1 === -1 || index2 === -1) {
+                const c1 = matchedPairs.get(senderId);
+                const c2 = matchedPairs.get(recipientId);
+                if (c1 !== recipientId || c2 !== senderId) {
                   logger.error('发送私信失败', '会话不存在');
                   callback({ type: 'ERROR', message: '会话不存在' });
                   return;
