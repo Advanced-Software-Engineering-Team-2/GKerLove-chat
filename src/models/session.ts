@@ -7,6 +7,7 @@ export interface ISession {
   initiatorId: string;
   recipientId: string;
   messages: IMessage[];
+  anonymous?: boolean;
   initiatorLastRead?: Date;
   recipientLastRead?: Date;
 }
@@ -17,6 +18,7 @@ export const sessionSchema = new Schema<ISession>({
   recipientId: { type: String, required: true },
   initiatorLastRead: { type: Date },
   recipientLastRead: { type: Date },
+  anonymous: { type: Boolean, default: false },
   messages: { type: [messageSchema], default: [] },
 });
 

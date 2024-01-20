@@ -1,4 +1,5 @@
 import { IMessage, messageType } from '../models/message';
+import { IUser } from '../models/user';
 
 interface R<T = void> {
   type: 'SUCCESS' | 'ERROR';
@@ -23,10 +24,13 @@ interface ServerToClientEvents {
   viewDisappearingImage: (sessionId: string, messageId: string) => void;
   startTyping: (sessionId: string) => void;
   stopTyping: (sessionId: string) => void;
+  matchSuccess: (sessionId: string, peerId: string) => void;
+  matchLeave: () => void;
 }
 
 interface ClientToServerEvents {
   privateMessage: (
+    sessionId: string,
     message: IClientToServerMessage,
     callback: (res: R<IServerToClientMessage>) => void,
   ) => void;
@@ -38,6 +42,9 @@ interface ClientToServerEvents {
   startTyping: (sessionId: string, callback: (res: R) => void) => void;
   stopTyping: (sessionId: string, callback: (res: R) => void) => void;
   readMessages: (sessionId: string, callback: (res: R) => void) => void;
+  matchRequest: (callback: (res: R) => void) => void;
+  matchCancel: (callback: (res: R) => void) => void;
+  matchLeave: (callback: (res: R) => void) => void;
 }
 
 interface InterServerEvents {
@@ -45,8 +52,7 @@ interface InterServerEvents {
 }
 
 interface SocketData {
-  userId: string;
-  username: string;
+  user: IUser;
 }
 
 export {
