@@ -269,7 +269,7 @@ async function startApp() {
         socket.on('matchRequest', (callback) => {
           try {
             logger.info('请求匹配', userId);
-            if (matchingQueue.includes(user)) {
+            if (matchingQueue.some((u) => u._id === userId)) {
               logger.error('请求匹配失败', '用户已在匹配队列中');
               callback({ type: 'ERROR', message: '用户已在匹配队列中' });
             } else {
