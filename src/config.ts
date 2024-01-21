@@ -9,7 +9,7 @@ interface Config {
 }
 
 const devConfig: Config = {
-  port: 3000,
+  port: 30101,
   dbUrl: 'mongodb://server.cqupt-gyr.xyz/GKerLove',
   dbUser: 'gkers',
   dbPass: 'gkers111666',

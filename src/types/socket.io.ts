@@ -1,5 +1,6 @@
 import { IMessage, messageType } from '../models/message';
 import { IUser } from '../models/user';
+import { Server, Socket } from 'socket.io';
 
 interface R<T = void> {
   type: 'SUCCESS' | 'ERROR';
@@ -55,7 +56,23 @@ interface SocketData {
   user: IUser;
 }
 
+type MySocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+type MyIO = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
 export {
+  MyIO,
+  MySocket,
   R,
   ServerToClientEvents,
   ClientToServerEvents,
