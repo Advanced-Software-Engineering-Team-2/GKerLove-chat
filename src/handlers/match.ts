@@ -6,6 +6,7 @@ import {
   removeFromQueue,
   tryMatch,
 } from '../utils/match';
+import Session, { ISession } from '../models/session';
 
 function createMatchHandler(socket: MySocket, io: MyIO) {
   const user = socket.data.user;
@@ -60,10 +61,63 @@ function createMatchHandler(socket: MySocket, io: MyIO) {
     }
   };
 
+  const findAnnonyousSession = async (sessionId: string) => {
+    const session = await Session.findOne({
+      _id: sessionId,
+      $or: [{ initiatorId: userId }, { recipientId: userId }],
+      anonymous: true,
+    });
+    return session;
+  };
+
+  const getPeerId = (session: ISession) => {
+    return session.initiatorId === userId
+      ? session.recipientId
+      : session.initiatorId;
+  };
+
+  const viewProfileRequestHandler: ClientToServerEvents['viewProfileRequest'] =
+    async (sessionId, callback) => {
+      try {
+        logger.info('请求查看用户资料', userId);
+        const session = await findAnnonyousSession(sessionId);
+        if (!session) {
+          throw new Error('会话不存在');
+        }
+        const peerId = getPeerId(session);
+        socket.to(peerId).emit('viewProfileRequest', sessionId);
+        callback({ type: 'SUCCESS' });
+      } catch (err) {
+        logger.error('请求查看用户资料失败', err);
+        callback({ type: 'ERROR', message: '查看用户资料失败' });
+        return;
+      }
+    };
+
+  const viewProfileResponseHandler: ClientToServerEvents['viewProfileResponse'] =
+    async (sessionId, res, callback) => {
+      try {
+        logger.info('响应查看用户资料', userId);
+        const session = await findAnnonyousSession(sessionId);
+        if (!session) {
+          throw new Error('会话不存在');
+        }
+        const peerId = getPeerId(session);
+        socket.to(peerId).emit('viewProfileResponse', sessionId, res);
+        callback({ type: 'SUCCESS' });
+      } catch (err) {
+        logger.error('响应查看用户资料失败', err);
+        callback({ type: 'ERROR', message: '查看用户资料失败' });
+        return;
+      }
+    };
+
   return {
     matchRequestHandler,
     matchCancelHandler,
     matchLeaveHandler,
+    viewProfileRequestHandler,
+    viewProfileResponseHandler,
   };
 }
 

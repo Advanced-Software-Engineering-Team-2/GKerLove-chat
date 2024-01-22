@@ -27,6 +27,8 @@ interface ServerToClientEvents {
   stopTyping: (sessionId: string) => void;
   matchSuccess: (sessionId: string, peerId: string) => void;
   matchLeave: () => void;
+  viewProfileRequest: (sessionId: string) => void;
+  viewProfileResponse: (sessionId: string, res: boolean) => void;
 }
 
 interface ClientToServerEvents {
@@ -46,6 +48,12 @@ interface ClientToServerEvents {
   matchRequest: (callback: (res: R) => void) => void;
   matchCancel: (callback: (res: R) => void) => void;
   matchLeave: (callback: (res: R) => void) => void;
+  viewProfileRequest: (sessionId: string, callback: (res: R) => void) => void;
+  viewProfileResponse: (
+    sessionId: string,
+    res: boolean,
+    callback: (res: R) => void,
+  ) => void;
 }
 
 interface InterServerEvents {

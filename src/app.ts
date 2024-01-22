@@ -67,8 +67,13 @@ export function createApplication(
       const { privateMessageHandler } = createPrivateMessageHandler(socket);
       const { readMessageHandler } = createReadMessageHandler(socket);
 
-      const { matchRequestHandler, matchCancelHandler, matchLeaveHandler } =
-        createMatchHandler(socket, io);
+      const {
+        matchRequestHandler,
+        matchCancelHandler,
+        matchLeaveHandler,
+        viewProfileRequestHandler,
+        viewProfileResponseHandler,
+      } = createMatchHandler(socket, io);
 
       const { startTypingHandler, stopTypingHandler } =
         createTypeHandler(socket);
@@ -92,6 +97,12 @@ export function createApplication(
 
       // 用户离开匹配
       socket.on('matchLeave', matchLeaveHandler);
+
+      // 用户请求查看对方资料
+      socket.on('viewProfileRequest', viewProfileRequestHandler);
+
+      // 用户回应对方资料请求
+      socket.on('viewProfileResponse', viewProfileResponseHandler);
 
       // 用户开始输入
       socket.on('startTyping', startTypingHandler);
