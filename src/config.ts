@@ -14,7 +14,7 @@ const devConfig: Config = {
   dbUser: process.env.GKerLove_DB_username || '',
   dbPass: process.env.GKerLove_DB_password || '',
   dbAuthSource: process.env.GKerLove_DB_authsource || '',
-  jwtSecret: process.env.GKerLove_JWT_secreat || '',
+  jwtSecret: process.env.GKerLove_JWT_secret || '',
   origin: '*',
 };
 
