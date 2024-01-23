@@ -11,10 +11,10 @@ interface Config {
 const devConfig: Config = {
   port: 30101,
   dbUrl: 'mongodb://server.cqupt-gyr.xyz/GKerLove',
-  dbUser: 'gkers',
-  dbPass: 'gkers111666',
-  dbAuthSource: 'test',
-  jwtSecret: 'foshfnfoeawbosdnvosifgosjcolnjosigdfogvjh0e4wfsiladfv',
+  dbUser: process.env.GKerLove_DB_username || '',
+  dbPass: process.env.GKerLove_DB_password || '',
+  dbAuthSource: process.env.GKerLove_DB_authsource || '',
+  jwtSecret: process.env.GKerLove_JWT_secreat || '',
   origin: '*',
 };
 
@@ -24,7 +24,7 @@ const prodConfig: Config = {
   dbUser: 'gkers',
   dbPass: 'gkers111666',
   dbAuthSource: 'admin',
-  jwtSecret: 'foshfnfoeawbosdnvosifgosjcolnjosigdfogvjh0e4wfsiladfv',
+  jwtSecret: process.env.GKerLove_JWT_secret || '',
   origin: ['https://love.gkers.cqupt-gyr.xyz', 'https://love.gkers.top'],
 };
 

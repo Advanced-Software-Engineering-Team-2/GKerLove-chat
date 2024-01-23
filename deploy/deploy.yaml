@@ -24,6 +24,12 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          env:
+            - name: GKerLove_JWT_secret
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: secret
 ---
 apiVersion: v1
 kind: Service
