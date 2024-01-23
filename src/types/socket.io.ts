@@ -1,3 +1,4 @@
+import { Condition } from '../utils/match';
 import { IMessage, messageType } from '../models/message';
 import { IUser } from '../models/user';
 import { Server, Socket } from 'socket.io';
@@ -45,7 +46,7 @@ interface ClientToServerEvents {
   startTyping: (sessionId: string, callback: (res: R) => void) => void;
   stopTyping: (sessionId: string, callback: (res: R) => void) => void;
   readMessages: (sessionId: string, callback: (res: R) => void) => void;
-  matchRequest: (callback: (res: R) => void) => void;
+  matchRequest: (condition: Condition, callback: (res: R) => void) => void;
   matchCancel: (callback: (res: R) => void) => void;
   matchLeave: (callback: (res: R) => void) => void;
   viewProfileRequest: (sessionId: string, callback: (res: R) => void) => void;

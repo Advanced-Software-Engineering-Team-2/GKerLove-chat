@@ -1,25 +1,20 @@
 import { ClientToServerEvents, MyIO, MySocket } from '../types/socket.io';
 import logger from '../logger';
-import {
-  addToQueue,
-  leaveMatch,
-  removeFromQueue,
-  tryMatch,
-} from '../utils/match';
+import { leaveMatch, removeFromQueue, tryMatch } from '../utils/match';
 import Session, { ISession } from '../models/session';
 
 function createMatchHandler(socket: MySocket, io: MyIO) {
   const user = socket.data.user;
   const userId = user._id;
 
-  const matchRequestHandler: ClientToServerEvents['matchRequest'] = (
+  const matchRequestHandler: ClientToServerEvents['matchRequest'] = async (
+    condition,
     callback,
   ) => {
     try {
       logger.info('请求匹配', userId);
-      addToQueue(user);
       callback({ type: 'SUCCESS' });
-      const res = tryMatch(); // 有一个新用户加入到队列，尝试匹配
+      const res = await tryMatch({ user, condition }); // 有一个新用户加入到队列，尝试匹配
       if (res) {
         const { session, user1, user2 } = res;
         io.to(user1._id).emit('matchSuccess', session.id, user2._id);

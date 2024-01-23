@@ -3,7 +3,17 @@ import { IUser } from '../models/user';
 import logger from '../logger';
 import { v4 as uuidv4 } from 'uuid';
 
-const matchingQueue: IUser[] = [];
+export type Condition = {
+  diffGender: boolean;
+  noPreviousMatch: boolean;
+};
+
+type QueueItem = {
+  user: IUser;
+  condition: Condition;
+};
+
+const matchingQueue: QueueItem[] = [];
 const matchedPairs = new Map<string, string>();
 
 function isPeer(userId: string, peerId: string) {
@@ -12,73 +22,83 @@ function isPeer(userId: string, peerId: string) {
   );
 }
 
-function tryMatch(diffGender = false) {
-  if (matchingQueue.length < 2) {
-    return;
-  }
-  let user1, user2;
-  if (diffGender) {
-    for (let i = 0; i < matchingQueue.length; i++) {
-      for (let j = i + 1; j < matchingQueue.length; j++) {
-        if (matchingQueue[i].gender !== matchingQueue[j].gender) {
-          user1 = matchingQueue[i];
-          user2 = matchingQueue[j];
-          matchingQueue.splice(j, 1);
-          matchingQueue.splice(i, 1);
-          break;
-        }
-      }
-      if (user1 && user2) {
-        break;
-      }
+async function checkMatchCondition(item1: QueueItem, item2: QueueItem) {
+  if (item1.user._id === item2.user._id) return false;
+  if (item1.condition.diffGender || item2.condition.diffGender) {
+    // 要求两人性别不能相同
+    if (
+      !item1.user.gender ||
+      !item2.user.gender ||
+      item1.user.gender === item2.user.gender
+    ) {
+      return false;
     }
-  } else {
-    user1 = matchingQueue.shift();
-    user2 = matchingQueue.shift();
   }
-  if (user1 && user2) {
-    const session = new Session<ISession>({
-      _id: uuidv4(),
-      initiatorId: user1._id,
-      recipientId: user2._id,
-      anonymous: true,
-      messages: [],
-    });
+  if (item1.condition.noPreviousMatch || item2.condition.noPreviousMatch) {
+    // 要求两人之前不能匿名匹配过
     try {
-      session.save();
+      const session = await Session.findOne({
+        $or: [
+          { initiatorId: item1.user._id, recipientId: item2.user._id },
+          { initiatorId: item2.user._id, recipientId: item1.user._id },
+        ],
+        anonymous: true,
+      });
+      if (session) {
+        return false;
+      }
     } catch (err) {
-      logger.error('创建会话失败', err);
-      matchingQueue.unshift(user1);
-      matchingQueue.unshift(user2);
-      return;
+      logger.error('查询匿名会话失败', err);
+      return false;
     }
-    logger.info('匹配成功', user1.username, user2.username);
-    matchedPairs.set(user1._id, user2._id);
-    matchedPairs.set(user2._id, user1._id);
-    return {
-      session,
-      user1,
-      user2,
-    };
-  } else {
-    if (user1) matchingQueue.unshift(user1);
   }
-  logger.info(
-    '当前匹配队列',
-    matchingQueue.map((u) => u.username),
-  );
+  return true;
 }
 
-function addToQueue(user: IUser) {
-  if (matchingQueue.some((u) => u._id === user._id)) {
+async function tryMatch(source: QueueItem) {
+  if (matchingQueue.some((item) => item.user._id === source.user._id)) {
     logger.error('请求匹配失败', '用户已在匹配队列中');
     throw new Error('用户已在匹配队列中');
   }
-  matchingQueue.push(user);
+  for (let i = 0; i < matchingQueue.length; i++) {
+    const target = matchingQueue[i];
+    const result = await checkMatchCondition(source, target);
+    if (result) {
+      matchingQueue.splice(i, 1);
+      const session = new Session<ISession>({
+        _id: uuidv4(),
+        initiatorId: source.user._id,
+        recipientId: target.user._id,
+        anonymous: true,
+        messages: [],
+      });
+      try {
+        session.save();
+      } catch (err) {
+        logger.error('创建会话失败', err);
+        matchingQueue.unshift(source);
+        matchingQueue.unshift(target);
+        return;
+      }
+      logger.info('匹配成功', source.user.username, target.user.username);
+      matchedPairs.set(source.user._id, target.user._id);
+      matchedPairs.set(target.user._id, source.user._id);
+      return {
+        session,
+        user1: source.user,
+        user2: target.user,
+      };
+    }
+  }
+  matchingQueue.push(source);
+  logger.info(
+    '当前匹配队列',
+    matchingQueue.map((item) => item.user.username),
+  );
 }
 
 function removeFromQueue(user: IUser) {
-  const index = matchingQueue.findIndex((u) => u._id === user._id);
+  const index = matchingQueue.findIndex((u) => u.user._id === user._id);
   if (index !== -1) {
     matchingQueue.splice(index, 1);
   }
@@ -93,4 +113,4 @@ function leaveMatch(user: IUser) {
   return targetId;
 }
 
-export { tryMatch, isPeer, addToQueue, removeFromQueue, leaveMatch };
+export { tryMatch, isPeer, removeFromQueue, leaveMatch };
