@@ -1,43 +1,41 @@
-# 🧰 Simple TypeScript Starter | 2023
+# GKerLove-chat
 
-> We talk about a lot of **advanced Node.js and TypeScript** concepts on [the blog](https://khalilstemmler.com), particularly focused around Domain-Driven Design and large-scale enterprise application patterns. However, I received a few emails from readers that were interested in seeing what a basic TypeScript starter project looks like. So I've put together just that.
+果壳之恋聊天服务器项目
 
-### Features
+## 运行
 
-- Minimal
-- TypeScript v4
-- Testing with Jest
-- Linting with Eslint and Prettier
-- Pre-commit hooks with Husky
-- VS Code debugger scripts
-- Local development with Nodemon
+安装依赖：
 
-### Scripts
+```shell
+npm install
+```
 
-#### `npm run start:dev`
+开发环境启动服务器：
 
-Starts the application in development using `nodemon` and `ts-node` to do hot reloading.
+```shell
+npm run start:dev
+```
 
-#### `npm run start`
+生成环境启动服务器：
 
-Starts the app in production by first building the project with `npm run build`, and then executing the compiled JavaScript at `build/index.js`.
+```shell
+npm run start
+```
 
-#### `npm run build`
+打包：
 
-Builds the app at `build`, cleaning the folder first.
+```shell
+npm run build
+```
 
-#### `npm run test`
+## 配置
 
-Runs the `jest` tests once.
+项目配置在*config.ts*。
 
-#### `npm run test:dev`
+采用环境变量的方式进行配置，需要提供数据库（*MongoDB*）连接地址、用户名、密码、认证数据库、项目的*jwtScret*（需要与后端服务器一致）。
 
-Run the `jest` tests in watch mode, waiting for file changes.
+## 项目结构
 
-#### `npm run prettier-format`
+聊天服务器主要处理客户端和服务器端的双向通信。首先在*types/socket.io.ts*中添加*ServerToClientEvents*和*ClientToServerEvents*，约定服务器和客户端之间的通信方式。在*handlers*文件下，编写处理器处理客户端事件，在处理器中可以使用*callback*对客户端进行回调，告知客户端事件已被服务器处理。可以使用*socket*对象和*io*对象向客户端发送事件。
 
-Format your code.
-
-#### `npm run prettier-watch`
-
-Format your code in watch mode, waiting for file changes.
+*models*文件夹下是数据库的模型，用于与数据库交互。
